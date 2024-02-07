@@ -20,6 +20,8 @@ tx myfile.mp4
 # Then follow the directions
 ```
 
+This will generate a `magic-wormhole` command that you can use on the receiving end.
+
 # Install
 
 `git clone ...`
