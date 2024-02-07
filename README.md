@@ -1,18 +1,22 @@
 # tx
 
-Easiest way to send files:
-
-```bash
-tx myfile.mp4
-# Then follow the directions
-```
-
 [![Linting](../../actions/workflows/lint.yml/badge.svg)](../../actions/workflows/lint.yml)
 
 [![MacOS_Tests](../../actions/workflows/push_macos.yml/badge.svg)](../../actions/workflows/push_macos.yml)
 [![Ubuntu_Tests](../../actions/workflows/push_ubuntu.yml/badge.svg)](../../actions/workflows/push_ubuntu.yml)
 [![Win_Tests](../../actions/workflows/push_win.yml/badge.svg)](../../actions/workflows/push_win.yml)
 
+Easiest way to send files:
+
+Install
+```bash
+pip install wormhole-tx
+```
+
+```bash
+tx myfile.mp4
+# Then follow the directions
+```
 
 # Install
 
