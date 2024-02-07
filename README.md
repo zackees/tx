@@ -10,11 +10,12 @@
 
 Easiest way to send files:
 
-Install
+*Install*
 ```bash
 pip install wormhole-tx
 ```
 
+*Run*
 ```bash
 tx myfile.mp4
 # Then follow the directions
