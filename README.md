@@ -22,6 +22,12 @@ tx myfile.mp4
 
 This will generate a `magic-wormhole` command that you can use on the receiving end.
 
+# Background
+
+`magic-wormhole` is even more powerful when properly tuned. `wormhole-tx` gives saner defaults and is more secure with a larger key. The command to run on the receiving end will auto-accept the file and wait for it to begin.
+
+Additionally, the receiving command is generated at the *beginning* instead of the end of the archive building phase. This makes the command quicker to run since you can immediately connect the client to the sender.
+
 # Install
 
 `git clone ...`
