@@ -5,7 +5,7 @@ Unit test file.
 import os
 import unittest
 
-COMMAND = "tx"
+COMMAND = "tx --help"
 
 
 class MainTester(unittest.TestCase):
