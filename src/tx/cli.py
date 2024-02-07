@@ -1,3 +1,5 @@
+# pylint: disable=consider-using-with
+
 """
 A wrapper around magic-wormhole send to more easily send a file
 """
@@ -45,7 +47,6 @@ def gen_wormhole_receive_command(code: str) -> str:
 def main() -> int:
     try:
         args = parse_args()
-        args = args  # Silence warnings
         file_or_dir = args.file_or_dir
         if not os.path.exists(file_or_dir):
             print(f"File or directory {file_or_dir} does not exist.")
