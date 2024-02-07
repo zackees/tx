@@ -1,6 +1,6 @@
 # tx
 
-Fastest way to send files:
+Easiest way to send files:
 
 ```bash
 tx myfile.mp4
