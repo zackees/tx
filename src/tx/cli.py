@@ -10,6 +10,7 @@ import secrets
 import subprocess
 import sys
 import warnings
+from typing import IO
 
 KEY_LENGTH = 32
 
@@ -23,26 +24,26 @@ def gen_code(key_length: int) -> str:
 class ArgumentParser(argparse.ArgumentParser):
 
     def __init__(self, *args, **kwargs):
-        super(ArgumentParser, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
-    def print_help(self):
+    def print_help(self, file: IO[str] | None = None):
         """Prints the help message."""
         msg = self.format_help()
+        print(msg)
         stdout = subprocess.run(
             ["wormhole", "--help"], capture_output=True, text=True, check=False
         ).stdout
-        msg = (
-            msg
-            + "\n\n"
+
+        print(
+            "\n\n"
             + "###########################################################\n"
-            + "## Any unknown options will be passed to \"wormhole send\" ##\n"
+            + '## Any unknown options will be passed to "wormhole send" ##\n'
             + "###########################################################\n\n"
             + stdout
         )
-        print(msg)
 
 
-def parse_args() -> argparse.Namespace:
+def parse_args() -> tuple[argparse.Namespace, list[str]]:
     parser = ArgumentParser(
         description="Sends a file using magic-wormhole",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
@@ -71,9 +72,7 @@ def main() -> int:
     try:
         args, unknown = parse_args()
         if "--appid" in unknown:
-            warnings.warn(
-                "The --appid option is not supported. Use --code instead."
-            )
+            warnings.warn("The --appid option is not supported. Use --code instead.")
             return 1
         file_or_dir = args.file_or_dir
         if not os.path.exists(file_or_dir):
