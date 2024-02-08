@@ -9,6 +9,7 @@ import os
 import secrets
 import subprocess
 import sys
+import warnings
 
 KEY_LENGTH = 32
 
@@ -19,8 +20,30 @@ def gen_code(key_length: int) -> str:
     return "".join([str(secrets.randbelow(10)) for _ in range(key_length)])
 
 
+class ArgumentParser(argparse.ArgumentParser):
+
+    def __init__(self, *args, **kwargs):
+        super(ArgumentParser, self).__init__(*args, **kwargs)
+
+    def print_help(self):
+        """Prints the help message."""
+        msg = self.format_help()
+        stdout = subprocess.run(
+            ["wormhole", "--help"], capture_output=True, text=True, check=False
+        ).stdout
+        msg = (
+            msg
+            + "\n\n"
+            + "###########################################################\n"
+            + "## Any unknown options will be passed to \"wormhole send\" ##\n"
+            + "###########################################################\n\n"
+            + stdout
+        )
+        print(msg)
+
+
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(
+    parser = ArgumentParser(
         description="Sends a file using magic-wormhole",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
@@ -47,6 +70,11 @@ def gen_wormhole_receive_command(code: str) -> str:
 def main() -> int:
     try:
         args, unknown = parse_args()
+        if "--appid" in unknown:
+            warnings.warn(
+                "The --appid option is not supported. Use --code instead."
+            )
+            return 1
         file_or_dir = args.file_or_dir
         if not os.path.exists(file_or_dir):
             print(f"File or directory {file_or_dir} does not exist.")
