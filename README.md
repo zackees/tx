@@ -47,4 +47,5 @@ Run `./lint.sh` to find linting errors using `pylint`, `flake8` and `mypy`.
 
 # Versions
 
+  * 1.0.2: Unknown arguments are passed onto `wormhole send`. Help now displays `wormhole --help`.
   * 1.0.1: Fixes missing `magic-wormhole` dependency.
