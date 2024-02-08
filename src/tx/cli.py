@@ -32,12 +32,12 @@ def parse_args() -> argparse.Namespace:
         help="The code length to generate",
     )
     parser.add_argument("--code", type=str, default=None, help="The code to use")
-    args = parser.parse_args()
+    args, unknown = parser.parse_known_args()
     if args.code is not None and args.code_length is not None:
         parser.error(
             "Cannot specify both --code and --code-length. Either specify --code or --code-length."
         )
-    return parser.parse_args()
+    return args, unknown
 
 
 def gen_wormhole_receive_command(code: str) -> str:
@@ -46,14 +46,14 @@ def gen_wormhole_receive_command(code: str) -> str:
 
 def main() -> int:
     try:
-        args = parse_args()
+        args, unknown = parse_args()
         file_or_dir = args.file_or_dir
         if not os.path.exists(file_or_dir):
             print(f"File or directory {file_or_dir} does not exist.")
             return 1
         code = args.code or gen_code(args.code_length)
         recieve_cmd = gen_wormhole_receive_command(code)
-        cmd_list = ["wormhole", "send", file_or_dir, "--code", code]
+        cmd_list = ["wormhole", "send", file_or_dir, "--code", code] + unknown
         print(f'\nSending "{file_or_dir}"...')
         print("On the other computer, run the following command:\n")
         print("    " + recieve_cmd)
