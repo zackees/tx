@@ -10,7 +10,7 @@ import secrets
 import subprocess
 import sys
 import warnings
-from typing import IO
+from typing import IO, Optional
 
 KEY_LENGTH = 32
 
@@ -26,7 +26,7 @@ class ArgumentParser(argparse.ArgumentParser):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-    def print_help(self, file: IO[str] | None = None):
+    def print_help(self, file: Optional[IO[str]] = None):
         """Prints the help message."""
         msg = self.format_help()
         print(msg)
