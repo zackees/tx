@@ -4,6 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "wormhole-tx"
+readme = "README.md"
 description = "Front end for wormhole, easier and more secure!"
 requires-python = ">=3.7"
 keywords = ["template-python-cmd"]
