@@ -46,7 +46,7 @@ This environment requires you to use `git-bash`.
 Run `./lint.sh` to find linting errors using `pylint`, `flake8` and `mypy`.
 
 # Versions
-
+  * 1.0.6: Varius fixes and force UTF-8 on Windows to prevent crash during file send.
   * 1.0.3: Removes new typing system which doesn't work on python < 3.10
   * 1.0.2: Unknown arguments are passed onto `wormhole send`. Help now displays `wormhole --help`.
   * 1.0.1: Fixes missing `magic-wormhole` dependency.
