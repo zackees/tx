@@ -12,7 +12,11 @@ import sys
 import warnings
 from typing import IO, Optional
 
+from colorama import just_fix_windows_console
+
 KEY_LENGTH = 32
+
+just_fix_windows_console()
 
 
 def gen_code(key_length: int) -> str:
@@ -81,6 +85,10 @@ def main() -> int:
         code = args.code or gen_code(args.code_length)
         recieve_cmd = gen_wormhole_receive_command(code)
         cmd_list = ["wormhole", "send", file_or_dir, "--code", code] + unknown
+        if sys.platform == "win32":
+            # On windows, we need to use chcp 65501 to support UTF-8 or else
+            # we get an error when sending files with non-ascii characters
+            cmd_list = ["chcp", "65001", "&&"] + cmd_list
         print(f'\nSending "{file_or_dir}"...')
         print("On the other computer, run the following command:\n")
         print("    " + recieve_cmd)
@@ -90,6 +98,7 @@ def main() -> int:
             universal_newlines=True,
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
+            shell=True,
         )
         assert proc.stdout is not None
         assert proc.stderr is None
