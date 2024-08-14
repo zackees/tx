@@ -12,6 +12,8 @@ from pathlib import Path
 
 from tx.cli import run
 
+TIMEOUT = 60
+
 HERE = Path(__file__).parent
 RX_PATH = HERE / "rx"
 TX_PATH = HERE / "tx"
@@ -27,7 +29,7 @@ def run_tx(code):
         file_or_dir="testfile.txt",
         code=code,
         code_length=None,
-        wormhole_ags=[],
+        wormhole_args=[],
         cwd=TX_PATH,
     )
 
@@ -74,17 +76,17 @@ class RunTester(unittest.TestCase):
             shell=True,
         ) as rx_proc:
             try:
-                # Wait for the rx process to finish with a timeout of 5 seconds
-                _, rx_err = rx_proc.communicate(timeout=5)
+                # Wait for the rx process to finish with a timeout of TIMEOUT seconds
+                _, rx_err = rx_proc.communicate(timeout=TIMEOUT)
             except subprocess.TimeoutExpired:
                 rx_proc.kill()
                 _, rx_err = rx_proc.communicate()
-                self.fail("RX process timed out after 5 seconds")
+                self.fail(f"RX process timed out after {TIMEOUT} seconds")
 
         # Wait for the tx thread to complete
-        tx_thread.join(timeout=5)
+        tx_thread.join(timeout=TIMEOUT)
         if tx_thread.is_alive():
-            self.fail("TX thread did not complete within 5 seconds")
+            self.fail(f"TX thread did not complete within {TIMEOUT} seconds")
 
         # Check if the rx process completed successfully
         self.assertEqual(

@@ -73,11 +73,11 @@ def run(
     cwd: Optional[str] = None,
     code: Optional[str] = None,
     code_length: Optional[int] = None,
-    wormhole_ags: Optional[list[str]] = None,
+    wormhole_args: Optional[list[str]] = None,
 ) -> int:
     cwd = cwd or os.getcwd()
     code = code or None
-    wormhole_ags = wormhole_ags or []
+    wormhole_args = wormhole_args or []
     if not os.path.exists(os.path.join(cwd or "", file_or_dir)):
         print(f"File or directory {file_or_dir} does not exist.")
         return 1
@@ -91,7 +91,9 @@ def run(
 
     code = code or gen_code(code_length)
     recieve_cmd = gen_wormhole_receive_command(code)
-    cmd_list = ["wormhole", "send", file_or_dir, "--appid", code] + wormhole_ags
+    cmd_list = ["wormhole", "send", "--code", code, file_or_dir] + wormhole_args
+
+    cmd = subprocess.list2cmdline(cmd_list)
 
     if sys.platform == "win32":
         # On windows, we need to use chcp 65501 to support UTF-8 or else
@@ -104,7 +106,8 @@ def run(
     print("")
 
     proc = subprocess.Popen(
-        cmd_list,
+        cmd,
+        cwd=cwd,
         universal_newlines=True,
         stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT,
@@ -142,7 +145,7 @@ def main() -> int:
             cwd=os.getcwd(),
             code=args.code,
             code_length=args.code_length,
-            wormhole_ags=unknown,
+            wormhole_args=unknown,
         )
     except KeyboardInterrupt:
         return 1
