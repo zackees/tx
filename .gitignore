@@ -141,3 +141,5 @@ dmypy.json
 
 !.aider.conf.yml
 !.aiderignore
+
+tests/tx/testfile.txt
