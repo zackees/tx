@@ -46,6 +46,8 @@ This environment requires you to use `git-bash`.
 Run `./lint.sh` to find linting errors using `pylint`, `flake8` and `mypy`.
 
 # Versions
+
+  * 1.0.8: Update `magic-wormhole` to fix Mac M1 breakage.
   * 1.0.7: Adds missing dependency for colorama.
   * 1.0.6: Varius fixes and force UTF-8 on Windows to prevent crash during file send.
   * 1.0.3: Removes new typing system which doesn't work on python < 3.10
