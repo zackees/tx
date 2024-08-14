@@ -61,17 +61,74 @@ def parse_args() -> tuple[argparse.Namespace, list[str]]:
     )
     parser.add_argument("--code", type=str, default=None, help="The code to use")
     args, unknown = parser.parse_known_args()
-    if args.code is not None and args.code_length is not None:
-        parser.error(
-            "Cannot specify both --code and --code-length. Either specify --code or --code-length."
-        )
-    if args.code_length is None:
-        args.code_length = KEY_LENGTH
     return args, unknown
 
 
 def gen_wormhole_receive_command(code: str) -> str:
     return f"wormhole recieve --accept-file {code}"
+
+
+def run(
+    file_or_dir: str,
+    cwd: Optional[str] = None,
+    code: Optional[str] = None,
+    code_length: Optional[int] = None,
+    wormhole_ags: Optional[list[str]] = None,
+) -> int:
+    cwd = cwd or os.getcwd()
+    code = code or None
+    wormhole_ags = wormhole_ags or []
+    if not os.path.exists(os.path.join(cwd or "", file_or_dir)):
+        print(f"File or directory {file_or_dir} does not exist.")
+        return 1
+
+    if code is not None and code_length is not None:
+        raise ValueError(
+            "Cannot specify both --code and --code-length. Either specify --code or --code-length."
+        )
+    if code_length is None:
+        code_length = KEY_LENGTH
+
+    code = code or gen_code(code_length)
+    recieve_cmd = gen_wormhole_receive_command(code)
+    cmd_list = ["wormhole", "send", file_or_dir, "--appid", code] + wormhole_ags
+
+    if sys.platform == "win32":
+        # On windows, we need to use chcp 65501 to support UTF-8 or else
+        # we get an error when sending files with non-ascii characters
+        cmd_list = ["chcp", "65001", "&&"] + cmd_list
+
+    print(f'\nSending "{file_or_dir}"...')
+    print("On the other computer, run the following command:\n")
+    print("    " + recieve_cmd)
+    print("")
+
+    proc = subprocess.Popen(
+        cmd_list,
+        universal_newlines=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        shell=True,
+    )
+    assert proc.stdout is not None
+    assert proc.stderr is None
+
+    # stream out stdout line by line
+    for line in iter(proc.stdout.readline, ""):
+        if "Sending" in line and "kB file" in line:
+            continue
+        if line == "\n":
+            continue
+        if "Wormhole code is" in line:
+            continue
+        if "On the other computer" in line:
+            continue
+        if "wormhole receive" in line:
+            continue
+        print(line, end="")
+
+    proc.stdout.close()
+    return proc.wait()
 
 
 def main() -> int:
@@ -80,46 +137,13 @@ def main() -> int:
         if "--appid" in unknown:
             warnings.warn("The --appid option is not supported. Use --code instead.")
             return 1
-        file_or_dir = args.file_or_dir
-        if not os.path.exists(file_or_dir):
-            print(f"File or directory {file_or_dir} does not exist.")
-            return 1
-        code = args.code or gen_code(args.code_length)
-        recieve_cmd = gen_wormhole_receive_command(code)
-        cmd_list = ["wormhole", "send", file_or_dir, "--code", code] + unknown
-        if sys.platform == "win32":
-            # On windows, we need to use chcp 65501 to support UTF-8 or else
-            # we get an error when sending files with non-ascii characters
-            cmd_list = ["chcp", "65001", "&&"] + cmd_list
-        print(f'\nSending "{file_or_dir}"...')
-        print("On the other computer, run the following command:\n")
-        print("    " + recieve_cmd)
-        print("")
-        proc = subprocess.Popen(
-            cmd_list,
-            universal_newlines=True,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT,
-            shell=True,
+        return run(
+            file_or_dir=args.file_or_dir,
+            cwd=os.getcwd(),
+            code=args.code,
+            code_length=args.code_length,
+            wormhole_ags=unknown,
         )
-        assert proc.stdout is not None
-        assert proc.stderr is None
-        # stream out stdout line by line
-        for line in iter(proc.stdout.readline, ""):
-            if "Sending" in line and "kB file" in line:
-                continue
-            if line == "\n":
-                continue
-            if "Wormhole code is" in line:
-                continue
-            if "On the other computer" in line:
-                continue
-            if "wormhole receive" in line:
-                continue
-            print(line, end="")
-        proc.stdout.close()
-        rtn = proc.wait()
-        return rtn
     except KeyboardInterrupt:
         return 1
 

@@ -1,16 +1,16 @@
+# pylint: disable=R0801
+
 """
 Unit test file.
 """
 
+import filecmp
 import random
 import shutil
 import string
 import subprocess
-import threading
 import unittest
 from pathlib import Path
-
-from tx.cli import run
 
 HERE = Path(__file__).parent
 RX_PATH = HERE / "rx"
@@ -19,17 +19,8 @@ TX_PATH = HERE / "tx"
 # Generate a random 32-character code
 RANDOM_CODE = "".join(random.choices(string.digits, k=32))
 
+TX_COMMAND = f"tx --code {RANDOM_CODE}"
 RX_COMMAND = f"wormhole receive --accept-file {RANDOM_CODE}"
-
-
-def run_tx(code):
-    run(
-        file_or_dir="testfile.txt",
-        code=code,
-        code_length=None,
-        wormhole_ags=[],
-        cwd=TX_PATH,
-    )
 
 
 class RunTester(unittest.TestCase):
@@ -59,34 +50,42 @@ class RunTester(unittest.TestCase):
 
     def test_run(self) -> None:
         """Test command line interface (CLI)."""
-        received_file_path = RX_PATH / "testfile.txt"
-        self.assertFalse(received_file_path.exists(), "Received file already exists")
-        # Create and start the tx thread
-        tx_thread = threading.Thread(target=run_tx, args=(RANDOM_CODE,), daemon=True)
-        tx_thread.start()
-
-        # Run rx command
+        # Create a test file in the tx directory
+        test_file_path = "testfile.txt"
+        tx_cmd = f"{TX_COMMAND} {test_file_path}"
+        # Run tx command
         with subprocess.Popen(
-            RX_COMMAND,
-            cwd=RX_PATH,
+            tx_cmd,
+            cwd=TX_PATH,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             shell=True,
-        ) as rx_proc:
-            try:
-                # Wait for the rx process to finish with a timeout of 5 seconds
-                _, rx_err = rx_proc.communicate(timeout=5)
-            except subprocess.TimeoutExpired:
-                rx_proc.kill()
-                _, rx_err = rx_proc.communicate()
-                self.fail("RX process timed out after 5 seconds")
+        ) as tx_proc:
+            # Run rx command
+            with subprocess.Popen(
+                RX_COMMAND,
+                cwd=RX_PATH,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                shell=True,
+            ) as rx_proc:
+                try:
+                    # Wait for both processes to finish with a timeout of 1 second
+                    _, tx_err = tx_proc.communicate(timeout=1)
+                    _, rx_err = rx_proc.communicate(timeout=1)
+                except subprocess.TimeoutExpired:
+                    tx_proc.kill()
+                    rx_proc.kill()
+                    _, tx_err = tx_proc.communicate()
+                    _, rx_err = rx_proc.communicate()
+                    self.fail("Subprocess timed out after 1 second")
 
-        # Wait for the tx thread to complete
-        tx_thread.join(timeout=5)
-        if tx_thread.is_alive():
-            self.fail("TX thread did not complete within 5 seconds")
-
-        # Check if the rx process completed successfully
+        # Check if both processes completed successfully
+        self.assertEqual(
+            tx_proc.returncode,
+            0,
+            f"TX process failed with error: {tx_err.decode()}",
+        )
         self.assertEqual(
             rx_proc.returncode,
             0,
@@ -96,6 +95,12 @@ class RunTester(unittest.TestCase):
         # Check if the received file exists
         received_file_path = RX_PATH / "testfile.txt"
         self.assertTrue(received_file_path.exists(), "Received file does not exist")
+
+        # Compare the sent and received files
+        self.assertTrue(
+            filecmp.cmp(test_file_path, received_file_path, shallow=False),
+            "Sent and received files do not match",
+        )
 
 
 if __name__ == "__main__":
