@@ -38,9 +38,16 @@ class RunTester(unittest.TestCase):
                     stdout=subprocess.PIPE,
                     stderr=subprocess.PIPE,
                 ) as rx_proc:
-                    # Wait for both processes to finish
-                    _, tx_err = tx_proc.communicate()
-                    _, rx_err = rx_proc.communicate()
+                    try:
+                        # Wait for both processes to finish with a timeout of 1 second
+                        _, tx_err = tx_proc.communicate(timeout=1)
+                        _, rx_err = rx_proc.communicate(timeout=1)
+                    except subprocess.TimeoutExpired:
+                        tx_proc.kill()
+                        rx_proc.kill()
+                        _, tx_err = tx_proc.communicate()
+                        _, rx_err = rx_proc.communicate()
+                        self.fail("Subprocess timed out after 1 second")
 
             # Check if both processes completed successfully
             self.assertEqual(
