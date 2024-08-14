@@ -4,12 +4,17 @@ Unit test file.
 
 import filecmp
 import os
+import random
+import string
 import subprocess
 import tempfile
 import unittest
 
-TX_COMMAND = "tx --code 3784918307"
-RX_COMMAND = "wormhole receive --accept-file 3784918307"
+# Generate a random 32-character code
+RANDOM_CODE = "".join(random.choices(string.digits, k=32))
+
+TX_COMMAND = f"tx --code {RANDOM_CODE}"
+RX_COMMAND = f"wormhole receive --accept-file {RANDOM_CODE}"
 
 
 class RunTester(unittest.TestCase):
