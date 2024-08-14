@@ -56,7 +56,7 @@ def parse_args() -> tuple[argparse.Namespace, list[str]]:
     parser.add_argument(
         "--code-length",
         type=int,
-        default=KEY_LENGTH,
+        default=None,
         help="The code length to generate",
     )
     parser.add_argument("--code", type=str, default=None, help="The code to use")
@@ -65,6 +65,8 @@ def parse_args() -> tuple[argparse.Namespace, list[str]]:
         parser.error(
             "Cannot specify both --code and --code-length. Either specify --code or --code-length."
         )
+    if args.code_length is None:
+        args.code_length = KEY_LENGTH
     return args, unknown
 
 
