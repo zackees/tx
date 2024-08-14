@@ -66,6 +66,8 @@ if [ ! -d "venv" ]; then
   export PATH="$this_dir:$PATH"
   echo "Environment created."
   pip install -e .
+  pip install -r requirements.testing.txt
+  set +e
   exit 0
 fi
 
@@ -75,6 +77,7 @@ if [[ "$IN_ACTIVATED_ENV" != "1" ]]; then
   this_dir=$(pwd)
   export PATH="$this_dir:$PATH"
 fi
+set +e
 """
 HERE = os.path.dirname(__file__)
 os.chdir(os.path.abspath(HERE))
@@ -217,6 +220,7 @@ def main() -> int:
     try:
         cmd = "bash activate.sh" if sys.platform == "win32" else f'"{activate_sh}"'
         _exe(f"{cmd} && pip install -e .")  # Why does this fail on windows git-bash?
+        _exe(f"{cmd} && pip install -r requirements.testing.txt")
         print(
             'Now use ". ./activate.sh" (at the project root dir) to enter into the environment.'
         )
