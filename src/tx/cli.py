@@ -59,6 +59,7 @@ def parse_args() -> tuple[argparse.Namespace, list[str]]:
         default=None,
         help="The code length to generate",
     )
+    parser.add_argument("--multi", action="store_true", help="Send multiple files")
     parser.add_argument("--code", type=str, default=None, help="The code to use")
     args, unknown = parser.parse_known_args()
     return args, unknown
@@ -74,6 +75,7 @@ def run(
     code: Optional[str] = None,
     code_length: Optional[int] = None,
     wormhole_args: Optional[list[str]] = None,
+    multi_file: bool = False,
 ) -> int:
     cwd = cwd or os.getcwd()
     code = code or None
@@ -100,38 +102,43 @@ def run(
         # we get an error when sending files with non-ascii characters
         cmd_list = ["chcp", "65001", "&&"] + cmd_list
 
-    print(f'\nSending "{file_or_dir}"...')
-    print("On the other computer, run the following command:\n")
-    print("    " + recieve_cmd)
-    print("")
+    while True:
 
-    proc = subprocess.Popen(
-        cmd,
-        cwd=cwd,
-        universal_newlines=True,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.STDOUT,
-        shell=True,
-    )
-    assert proc.stdout is not None
-    assert proc.stderr is None
+        print(f'\nSending "{file_or_dir}"...')
+        print("On the other computer, run the following command:\n")
+        print("    " + recieve_cmd)
+        print("")
 
-    # stream out stdout line by line
-    for line in iter(proc.stdout.readline, ""):
-        if "Sending" in line and "kB file" in line:
-            continue
-        if line == "\n":
-            continue
-        if "Wormhole code is" in line:
-            continue
-        if "On the other computer" in line:
-            continue
-        if "wormhole receive" in line:
-            continue
-        print(line, end="")
+        proc = subprocess.Popen(
+            cmd,
+            cwd=cwd,
+            universal_newlines=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            shell=True,
+        )
+        assert proc.stdout is not None
+        assert proc.stderr is None
 
-    proc.stdout.close()
-    return proc.wait()
+        # stream out stdout line by line
+        for line in iter(proc.stdout.readline, ""):
+            if "Sending" in line and "kB file" in line:
+                continue
+            if line == "\n":
+                continue
+            if "Wormhole code is" in line:
+                continue
+            if "On the other computer" in line:
+                continue
+            if "wormhole receive" in line:
+                continue
+            print(line, end="")
+
+        proc.stdout.close()
+        rtn_code = proc.wait()
+        if multi_file:
+            continue
+        return rtn_code
 
 
 def main() -> int:
@@ -146,6 +153,7 @@ def main() -> int:
             code=args.code,
             code_length=args.code_length,
             wormhole_args=unknown,
+            multi_file=args.multi,
         )
     except KeyboardInterrupt:
         return 1
