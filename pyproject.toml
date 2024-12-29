@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 name = "wormhole-tx"
 readme = "README.md"
 description = "Front end for wormhole, easier and more secure!"
-requires-python = ">=3.7"
+requires-python = ">=3.10"
 keywords = ["template-python-cmd"]
 license = { text = "BSD 3-Clause License" }
 classifiers = ["Programming Language :: Python :: 3"]
@@ -15,7 +15,7 @@ dependencies = [
     "colorama",
 ]
 # Change this with the version number bump.
-version = "1.0.9"
+version = "1.1.0"
 
 [tool.ruff]
 line-length = 200

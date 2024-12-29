@@ -144,6 +144,8 @@ def run(
 def main() -> int:
     try:
         args, unknown = parse_args()
+        print("$$$$$$$$$$$$$$$$$$$$$$")
+        print(args, unknown)
         if "--appid" in unknown:
             warnings.warn("The --appid option is not supported. Use --code instead.")
             return 1

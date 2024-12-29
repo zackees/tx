@@ -48,6 +48,7 @@ Run `./lint.sh` to find linting errors using `pylint`, `flake8` and `mypy`.
 
 # Versions
 
+  * 1.1.0: `--multi` keeps on dumping files to allow broad cast like file download
   * 1.0.9: Now has an api `tx.run` for code integration. Many other fixes.
   * 1.0.8: Update `magic-wormhole` to fix Mac M1 breakage.
   * 1.0.7: Adds missing dependency for colorama.
