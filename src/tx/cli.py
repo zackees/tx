@@ -95,12 +95,12 @@ def run(
     recieve_cmd = gen_wormhole_receive_command(code)
     cmd_list = ["wormhole", "send", "--code", code, file_or_dir] + wormhole_args
 
+    cmd = subprocess.list2cmdline(cmd_list)
+
     if sys.platform == "win32":
         # On windows, we need to use chcp 65501 to support UTF-8 or else
         # we get an error when sending files with non-ascii characters
         cmd_list = ["chcp", "65001", "&&"] + cmd_list
-
-    cmd = subprocess.list2cmdline(cmd_list)
 
     while True:
 
@@ -112,7 +112,6 @@ def run(
         proc = subprocess.Popen(
             cmd,
             cwd=cwd,
-            universal_newlines=True,
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
             shell=True,
@@ -121,7 +120,13 @@ def run(
         assert proc.stderr is None
 
         # stream out stdout line by line
-        for line in iter(proc.stdout.readline, ""):
+        # for line in iter(proc.stdout.readline, ""):
+        for raw_line in proc.stdout:
+            try:
+                line = raw_line.decode("utf-8", errors="replace")
+            except UnicodeDecodeError:
+                print(f"Error decoding line: {raw_line}")  # type: ignore
+                continue
             if "Sending" in line and "kB file" in line:
                 continue
             if line == "\n":
