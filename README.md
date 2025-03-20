@@ -46,6 +46,10 @@ This environment requires you to use `git-bash`.
 
 Run `./lint.sh` to find linting errors using `pylint`, `flake8` and `mypy`.
 
+# TODO
+
+  * add my other package https://github.com/zackees/rclone-api to allow tx to any backend anywhere.
+
 # Versions
 
   * 1.1.0: `--multi` keeps on dumping files to allow broad cast like file download
