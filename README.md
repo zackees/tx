@@ -49,6 +49,7 @@ Run `./lint.sh` to find linting errors using `pylint`, `flake8` and `mypy`.
 # TODO
 
   * add my other package https://github.com/zackees/rclone-api to allow tx to any backend anywhere.
+    * proposed API: `tx myfile.zip dst:Bucket/myfile.zip`
 
 # Versions
 
