@@ -10,6 +10,8 @@ import secrets
 import subprocess
 import sys
 import warnings
+from dataclasses import dataclass
+from pathlib import Path
 from typing import IO, Optional
 
 from colorama import just_fix_windows_console
@@ -47,7 +49,27 @@ class ArgumentParser(argparse.ArgumentParser):
         )
 
 
-def parse_args() -> tuple[argparse.Namespace, list[str]]:
+@dataclass
+class Args:
+    file_or_dir: Path
+    code_length: int | None
+    multi: bool
+    code: str | None
+
+    def __post_init__(self):
+        assert isinstance(
+            self.file_or_dir, Path
+        ), f"Expected Path, got {type(self.file_or_dir)}"
+        assert self.code_length is None or isinstance(
+            self.code_length, int
+        ), f"Expected int, got {type(self.code_length)}"
+        assert isinstance(self.multi, bool), f"Expected bool, got {type(self.multi)}"
+        assert self.code is None or isinstance(
+            self.code, str
+        ), f"Expected str, got {type(self.code)}"
+
+
+def parse_args() -> tuple[Args, list[str]]:
     parser = ArgumentParser(
         description="Sends a file using magic-wormhole",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
@@ -61,7 +83,13 @@ def parse_args() -> tuple[argparse.Namespace, list[str]]:
     )
     parser.add_argument("--multi", action="store_true", help="Send multiple files")
     parser.add_argument("--code", type=str, default=None, help="The code to use")
-    args, unknown = parser.parse_known_args()
+    tmp, unknown = parser.parse_known_args()
+    args = Args(
+        file_or_dir=Path(tmp.file_or_dir),
+        code_length=tmp.code_length,
+        multi=tmp.multi,
+        code=tmp.code,
+    )
     return args, unknown
 
 
@@ -154,7 +182,7 @@ def main() -> int:
             warnings.warn("The --appid option is not supported. Use --code instead.")
             return 1
         return run(
-            file_or_dir=args.file_or_dir,
+            file_or_dir=args.file_or_dir.as_posix(),
             cwd=os.getcwd(),
             code=args.code,
             code_length=args.code_length,
