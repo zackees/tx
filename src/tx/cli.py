@@ -32,12 +32,15 @@ class ArgumentParser(argparse.ArgumentParser):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-    def print_help(self, file: Optional[IO[str]] = None):
+    def print_help(self, file: Optional[IO[str]] = None) -> None:  # type: ignore
         """Prints the help message."""
         msg = self.format_help()
         print(msg)
         stdout = subprocess.run(
-            ["wormhole", "--help"], capture_output=True, text=True, check=False
+            ["wormhole", "--help", "--no-qr"],
+            capture_output=True,
+            text=True,
+            check=False,
         ).stdout
 
         print(
