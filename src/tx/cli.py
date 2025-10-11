@@ -124,14 +124,21 @@ def run(
 
     code = code or gen_code(code_length)
     recieve_cmd = gen_wormhole_receive_command(code)
-    cmd_list = ["wormhole", "send", "--code", code, file_or_dir] + wormhole_args
-
-    cmd = subprocess.list2cmdline(cmd_list)
+    cmd_list = [
+        "wormhole",
+        "send",
+        "--code",
+        code,
+        "--no-qr",
+        file_or_dir,
+    ] + wormhole_args
 
     if sys.platform == "win32":
         # On windows, we need to use chcp 65501 to support UTF-8 or else
         # we get an error when sending files with non-ascii characters
         cmd_list = ["chcp", "65001", "&&"] + cmd_list
+
+    cmd = subprocess.list2cmdline(cmd_list)
 
     while True:
 
